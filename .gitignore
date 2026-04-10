@@ -1,0 +1,6 @@
+*.iml
+*.jar
+*.class
+**/.idea
+**/.gigaidea
+*.MF
