@@ -3,6 +3,8 @@ package com.taskmanager.service;
 import com.taskmanager.model.Order;
 import com.taskmanager.annotations.OrderType;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
@@ -24,21 +26,24 @@ public class OrderProducer implements Runnable {
 
     @Override
     public void run() {
-        String[] descriptions = {
+        List<String> descriptions = Arrays.asList(
                 "Ноутбук Dell XPS", "Смартфон iPhone 15", "Клавиатура Logitech",
                 "Мышь беспроводная", "Монитор Samsung", "Принтер HP",
                 "Колонки JBL", "Веб-камера Logitech", "Наушники Sony",
                 "Внешний жесткий диск", "USB флешка 64GB", "Чехол для телефона"
-        };
+        );
 
-        String[] types = {OrderType.Type.URGENT.name(), OrderType.Type.REGULAR.name()};
+        List<String> types = Arrays.asList(
+                OrderType.Type.URGENT.name(),
+                OrderType.Type.REGULAR.name()
+        );
 
         try {
             while (running && ordersCreated.get() < maxOrders) {
                 int orderNum = ordersCreated.incrementAndGet();
 
-                String description = descriptions[orderNum % descriptions.length] + " #" + orderNum;
-                String type = types[orderNum % types.length];
+                String description = descriptions.get(orderNum % descriptions.size()) + " #" + orderNum;
+                String type = types.get(orderNum % types.size());
 
                 Order order = new Order(description, type);
 

@@ -5,11 +5,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 @Documented
-public @interface OrderType {
-    String value() default "REGULAR";
-
-    enum Type {
-        URGENT,
-        REGULAR
-    }
+public @interface NotNull {
+    String message() default "Field cannot be null";
 }

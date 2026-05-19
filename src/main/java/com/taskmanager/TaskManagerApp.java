@@ -4,6 +4,8 @@ import com.taskmanager.model.Order;
 import com.taskmanager.service.OrderConsumer;
 import com.taskmanager.service.OrderProducer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -15,9 +17,9 @@ public class TaskManagerApp {
     private static final int QUEUE_CAPACITY = 10;
 
     public static void main(String[] args) {
-        System.out.println("=" .repeat(60));
+        System.out.println("=".repeat(60));
         System.out.println("ЗАПУСК СИСТЕМЫ ОБРАБОТКИ ЗАКАЗОВ");
-        System.out.println("=" .repeat(60));
+        System.out.println("=".repeat(60));
         System.out.printf("Конфигурация: %d потребителей | %d заказов | Очередь: %d%n%n",
                 NUM_CONSUMERS, MAX_ORDERS, QUEUE_CAPACITY);
 
@@ -26,15 +28,14 @@ public class TaskManagerApp {
 
         OrderProducer producer = new OrderProducer(orderQueue, MAX_ORDERS);
 
-        OrderConsumer[] consumers = new OrderConsumer[NUM_CONSUMERS];
+        List<OrderConsumer> consumers = new ArrayList<>();
         for (int i = 0; i < NUM_CONSUMERS; i++) {
-            consumers[i] = new OrderConsumer(orderQueue, processedOrders, "Потребитель-" + (i + 1));
+            consumers.add(new OrderConsumer(orderQueue, processedOrders, "Потребитель-" + (i + 1)));
         }
 
         ExecutorService executorService = Executors.newFixedThreadPool(NUM_CONSUMERS + 1);
 
         executorService.submit(producer);
-
         for (OrderConsumer consumer : consumers) {
             executorService.submit(consumer);
         }
@@ -50,7 +51,6 @@ public class TaskManagerApp {
 
         try {
             executorService.shutdown();
-
             boolean terminated = executorService.awaitTermination(30, TimeUnit.SECONDS);
 
             if (!terminated) {
@@ -62,7 +62,6 @@ public class TaskManagerApp {
             for (OrderConsumer consumer : consumers) {
                 consumer.stop();
             }
-
             printStatistics(producer, consumers, processedOrders);
 
         } catch (InterruptedException e) {
@@ -73,7 +72,7 @@ public class TaskManagerApp {
     }
 
     private static void printStatistics(OrderProducer producer,
-                                        OrderConsumer[] consumers,
+                                        List<OrderConsumer> consumers,
                                         ConcurrentHashMap<String, Order> processedOrders) {
         System.out.println("\n" + "=".repeat(60));
         System.out.println("СТАТИСТИКА ОБРАБОТКИ ЗАКАЗОВ");
@@ -82,11 +81,11 @@ public class TaskManagerApp {
         System.out.printf("Создано заказов: %d%n", producer.getOrdersCreated());
 
         int totalProcessed = 0;
-        for (OrderConsumer consumer : consumers) {
-            System.out.printf("%s обработал: %d заказов%n",
-                    consumer.getClass().getSimpleName().replace("OrderConsumer", "Потребитель"),
-                    consumer.getOrdersProcessed());
-            totalProcessed += consumer.getOrdersProcessed();
+        for (int i = 0; i < consumers.size(); i++) {
+            OrderConsumer consumer = consumers.get(i);
+            int processed = consumer.getOrdersProcessed();
+            System.out.printf("Потребитель-%d обработал: %d заказов%n", (i + 1), processed);
+            totalProcessed += processed;
         }
 
         System.out.printf("Всего обработано: %d заказов%n", totalProcessed);

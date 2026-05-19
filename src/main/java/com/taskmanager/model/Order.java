@@ -1,5 +1,7 @@
 package com.taskmanager.model;
 
+import com.taskmanager.annotations.NotNull;
+import com.taskmanager.annotations.NotEmpty;
 import com.taskmanager.annotations.OrderType;
 import com.taskmanager.annotations.Validate;
 
@@ -9,9 +11,11 @@ import java.util.UUID;
 
 public class Order {
 
+    @NotNull(message = "Order ID cannot be null")
     @Validate(required = true, message = "Order ID cannot be null")
     private String id;
 
+    @NotEmpty(message = "Order description cannot be null or empty")
     @Validate(required = true, message = "Order description cannot be null or empty")
     private String description;
 

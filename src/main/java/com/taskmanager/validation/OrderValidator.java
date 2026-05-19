@@ -1,5 +1,7 @@
 package com.taskmanager.validation;
 
+import com.taskmanager.annotations.NotNull;
+import com.taskmanager.annotations.NotEmpty;
 import com.taskmanager.annotations.OrderType;
 import com.taskmanager.annotations.Validate;
 import com.taskmanager.model.Order;
@@ -25,28 +27,27 @@ public class OrderValidator {
         for (Field field : fields) {
             field.setAccessible(true);
 
-            if (field.isAnnotationPresent(Validate.class)) {
-                Validate validate = field.getAnnotation(Validate.class);
+            try {
+                Object value = field.get(order);
 
-                try {
-                    Object value = field.get(order);
-
-                    if (validate.required() && value == null) {
-                        validationErrors.add(validate.message());
-                    } else if (field.getType() == String.class && validate.required()) {
-                        String strValue = (String) value;
-                        if (strValue == null || strValue.trim().isEmpty()) {
-                            validationErrors.add(validate.message());
-                        }
+                if (field.isAnnotationPresent(NotNull.class)) {
+                    NotNull annotation = field.getAnnotation(NotNull.class);
+                    if (value == null) {
+                        validationErrors.add(annotation.message());
                     }
-                } catch (IllegalAccessException e) {
-                    validationErrors.add("Cannot access field: " + field.getName());
                 }
-            }
 
-            if (field.isAnnotationPresent(OrderType.class) && field.getType() == String.class) {
-                try {
-                    String typeValue = (String) field.get(order);
+                if (field.isAnnotationPresent(NotEmpty.class) && field.getType() == String.class) {
+                    NotEmpty annotation = field.getAnnotation(NotEmpty.class);
+                    String strValue = (String) value;
+                    if (strValue == null || strValue.trim().isEmpty()) {
+                        validationErrors.add(annotation.message());
+                    }
+                }
+
+                if (field.isAnnotationPresent(OrderType.class) && field.getType() == String.class) {
+                    OrderType annotation = field.getAnnotation(OrderType.class);
+                    String typeValue = (String) value;
                     if (typeValue != null) {
                         boolean isValidType = typeValue.equals(OrderType.Type.URGENT.name()) ||
                                 typeValue.equals(OrderType.Type.REGULAR.name());
@@ -55,9 +56,21 @@ public class OrderValidator {
                                     ". Must be URGENT or REGULAR");
                         }
                     }
-                } catch (IllegalAccessException e) {
-                    validationErrors.add("Cannot validate order type: " + e.getMessage());
                 }
+
+                if (field.isAnnotationPresent(Validate.class)) {
+                    Validate validate = field.getAnnotation(Validate.class);
+                    if (validate.required() && value == null) {
+                        validationErrors.add(validate.message());
+                    } else if (field.getType() == String.class && validate.required()) {
+                        String strValue = (String) value;
+                        if (strValue == null || strValue.trim().isEmpty()) {
+                            validationErrors.add(validate.message());
+                        }
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                validationErrors.add("Cannot access field: " + field.getName());
             }
         }
 
