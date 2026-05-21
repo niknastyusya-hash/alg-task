@@ -1,0 +1,11 @@
+com\taskmanager\service\OrderConsumer.class
+com\taskmanager\TaskManagerApp.class
+com\taskmanager\annotations\NotNull.class
+com\taskmanager\service\OrderProducer.class
+com\taskmanager\storage\OrderStorage.class
+com\taskmanager\validation\OrderValidator.class
+com\taskmanager\annotations\NotEmpty.class
+com\taskmanager\annotations\Validate.class
+com\taskmanager\model\Order.class
+com\taskmanager\annotations\OrderType.class
+com\taskmanager\service\OrderProcessor.class
